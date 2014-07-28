@@ -4,36 +4,101 @@ using System.Collections.Generic;
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using Core;
 
-namespace iOS
+namespace iPhone
 {
 	public partial class MasterViewController : UITableViewController
 	{
 		DataSource dataSource;
+		LoadingOverlay loadingOverlay;
 
 		public MasterViewController (IntPtr handle) : base (handle)
 		{
-			Title = NSBundle.MainBundle.LocalizedString ("Master", "Master");
-			
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad) {
-				ContentSizeForViewInPopover = new SizeF (320f, 600f);
-				ClearsSelectionOnViewWillAppear = false;
-			}
-			
-			// Custom initialization
-		}
+			Title = NSBundle.MainBundle.LocalizedString ("Hikae", "Hikae");
 
-		public DetailViewController DetailViewController {
-			get;
-			set;
+			// Custom initialization
 		}
 
 		void AddNewItem (object sender, EventArgs args)
 		{
-			dataSource.Objects.Insert (0, DateTime.Now);
+			UIAlertView alert = new UIAlertView ();
+			alert.AddButton ("Open/Create List");
+			alert.AddButton ("Cancel");
+			alert.Message = "Please enter the name and the password for the list you want to create or open.";
+			alert.AlertViewStyle = UIAlertViewStyle.LoginAndPasswordInput;
+			alert.Clicked += AlertButtonClicked; 
+			alert.Show ();
+		}
 
-			using (var indexPath = NSIndexPath.FromRowSection (0, 0))
+		void AlertButtonClicked(object sender, UIButtonEventArgs args) {
+			UIAlertView parent_alert = (UIAlertView)sender;
+
+			if (args.ButtonIndex == 0) {
+				loadingOverlay = new LoadingOverlay (UIScreen.MainScreen.Bounds);
+				View.Add (loadingOverlay);
+
+				ToFy.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text,delegate(ToFy.Response response) {
+					if (response.status == ToFy.Status.NotFound) {
+						InvokeOnMainThread ( () => {
+							ToFy.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text,delegate(ToFy.Response resp) {
+								InvokeOnMainThread ( () => { handleResponse(resp);});
+							});
+						});
+					} else {
+						InvokeOnMainThread ( () => { handleResponse(response);});
+					}
+				});
+			}
+		}
+
+		private void handleResponse(ToFy.Response response){
+			switch (response.status) {
+			case ToFy.Status.Ok:
+				gotObject(response.list);
+				break;
+			case ToFy.Status.Unauthorized:
+				wrongPassword ();
+				break;
+			default:
+				generalError(response.status);
+				break;
+			}
+		}
+
+		private void gotObject(ToFy.List list) {
+			dataSource.Objects.Insert (0, list);
+
+			using (var indexPath = NSIndexPath.FromRowSection (0, 0)) {
 				TableView.InsertRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Automatic);
+				TableView.SelectRow (indexPath, true, UITableViewScrollPosition.Top);
+			}
+
+			loadingOverlay.Hide ();
+		}
+
+		private void wrongPassword() {
+			UIAlertView alert = new UIAlertView ();
+
+			alert.AddButton ("Ok");
+			alert.Message = "Wrong password!";
+			alert.AlertViewStyle = UIAlertViewStyle.Default;
+			alert.Clicked += (object s, UIButtonEventArgs e) => {
+				loadingOverlay.Hide ();
+			}; 
+			alert.Show ();
+		}
+
+		private void generalError(ToFy.Status status) {
+			UIAlertView alert = new UIAlertView ();
+
+			alert.AddButton ("Ok");
+			alert.Message = "Error: " + status.ToString ();
+			alert.AlertViewStyle = UIAlertViewStyle.Default;
+			alert.Clicked += (object s, UIButtonEventArgs e) => {
+				loadingOverlay.Hide ();
+			}; 
+			alert.Show ();
 		}
 
 		public override void DidReceiveMemoryWarning ()
@@ -47,9 +112,9 @@ namespace iOS
 		public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
-
+			
 			// Perform any additional setup after loading the view, typically from a nib.
-			NavigationItem.LeftBarButtonItem = EditButtonItem;
+			//NavigationItem.LeftBarButtonItem = EditButtonItem;
 
 			var addButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, AddNewItem);
 			NavigationItem.RightBarButtonItem = addButton;
@@ -60,7 +125,7 @@ namespace iOS
 		class DataSource : UITableViewSource
 		{
 			static readonly NSString CellIdentifier = new NSString ("Cell");
-			readonly List<object> objects = new List<object> ();
+			readonly List<ToFy.List> objects = new List<ToFy.List> ();
 			readonly MasterViewController controller;
 
 			public DataSource (MasterViewController controller)
@@ -68,7 +133,7 @@ namespace iOS
 				this.controller = controller;
 			}
 
-			public IList<object> Objects {
+			public IList<ToFy.List> Objects {
 				get { return objects; }
 			}
 
@@ -125,12 +190,6 @@ namespace iOS
 				return true;
 			}
 			*/
-
-			public override void RowSelected (UITableView tableView, NSIndexPath indexPath)
-			{
-				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
-					controller.DetailViewController.SetDetailItem (objects [indexPath.Row]);
-			}
 		}
 
 		public override void PrepareForSegue (UIStoryboardSegue segue, NSObject sender)
