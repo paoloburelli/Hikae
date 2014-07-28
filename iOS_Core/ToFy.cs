@@ -51,6 +51,14 @@ namespace Core
 		public static void GetList(string listName, string password, Action<Response> callback) {
 			makeRequest ("list/" + listName, password, Method.GET,callback);
 		}
+
+		public static void AddItem(string listName,string itemName, string password, Action<Response> callback) {
+			makeRequest ("list/" + listName+"/item/"+itemName, password, Method.PUT,callback);
+		}
+
+		public static void DeleteItem(string listName,string itemName, string password, Action<Response> callback) {
+			makeRequest ("list/" + listName+"/item/"+itemName, password, Method.DELETE,callback);
+		}
 	
 		public class Response {
 			public Status status { get; set; }

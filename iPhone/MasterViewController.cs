@@ -38,18 +38,22 @@ namespace iPhone
 				loadingOverlay = new LoadingOverlay (UIScreen.MainScreen.Bounds);
 				View.Add (loadingOverlay);
 
-				ToFy.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text,delegate(ToFy.Response response) {
+				ToFy.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(ToFy.Response response) {
 					if (response.status == ToFy.Status.NotFound) {
-						InvokeOnMainThread ( () => {
-							ToFy.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text,delegate(ToFy.Response resp) {
-								InvokeOnMainThread ( () => { handleResponse(resp);});
+						InvokeOnMainThread (() => {
+							ToFy.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(ToFy.Response resp) {
+								InvokeOnMainThread (() => {
+									handleResponse (resp);
+								});
 							});
 						});
 					} else {
-						InvokeOnMainThread ( () => { handleResponse(response);});
+						InvokeOnMainThread (() => {
+							handleResponse (response);
+						});
 					}
 				});
-			}
+			} 
 		}
 
 		private void handleResponse(ToFy.Response response){
@@ -71,7 +75,7 @@ namespace iPhone
 
 			using (var indexPath = NSIndexPath.FromRowSection (0, 0)) {
 				TableView.InsertRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Automatic);
-				TableView.SelectRow (indexPath, true, UITableViewScrollPosition.Top);
+				//TableView.SelectRow (indexPath, true, UITableViewScrollPosition.Top);
 			}
 
 			loadingOverlay.Hide ();
