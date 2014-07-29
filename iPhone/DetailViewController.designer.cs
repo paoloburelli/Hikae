@@ -18,11 +18,19 @@ namespace iPhone
 		[GeneratedCode ("iOS Designer", "1.0")]
 		UITableView table { get; set; }
 
+		[Outlet]
+		[GeneratedCode ("iOS Designer", "1.0")]
+		UIToolbar toolbar { get; set; }
+
 		void ReleaseDesignerOutlets ()
 		{
 			if (table != null) {
 				table.Dispose ();
 				table = null;
+			}
+			if (toolbar != null) {
+				toolbar.Dispose ();
+				toolbar = null;
 			}
 		}
 	}

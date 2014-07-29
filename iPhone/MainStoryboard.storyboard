@@ -8,8 +8,10 @@
         <scene sceneID="cUi-kZ-frf">
             <objects>
                 <navigationController id="rS3-R9-Ivy" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="yXu-0R-QUA">
+                    <navigationBar key="navigationBar" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="yXu-0R-QUA" shadowImage="" barStyle="black" translucent="YES">
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" colorSpace="calibratedRGB" red="1" green="1" blue="1" alpha="1"/>
+                        <color key="barTintColor" colorSpace="calibratedRGB" red="0.50196078431372548" green="0" blue="0" alpha="1"/>
                     </navigationBar>
                     <connections>
                         <segue destination="pGg-6v-bdr" kind="relationship" relationship="rootViewController" id="RxB-wf-QIq"/>
@@ -72,7 +74,7 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="5" translatesAutoresizingMaskIntoConstraints="NO">
-                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="524"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
@@ -106,19 +108,31 @@
                                 </prototypes>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="320" id="14"/>
-                                    <constraint firstAttribute="height" constant="568" id="15"/>
                                 </constraints>
                             </tableView>
+                            <toolbar opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="35" translatesAutoresizingMaskIntoConstraints="NO" key="tableFooterView" barStyle="black">
+                                <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                <items>
+                                </items>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="320" id="79"/>
+                                </constraints>
+                                <color key="barTintColor" colorSpace="calibratedRGB" red="0.50196078431372548" green="0" blue="0" alpha="1"/>
+                            </toolbar>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint id="12" firstItem="MMQ-IT-qOo" firstAttribute="trailing" secondItem="5" secondAttribute="trailing" constant="0.0"/>
-                            <constraint id="13" firstItem="MMQ-IT-qOo" firstAttribute="bottom" secondItem="5" secondAttribute="bottom" constant="0.0"/>
+                            <constraint id="77" firstItem="MMQ-IT-qOo" firstAttribute="trailing" secondItem="35" secondAttribute="trailing" constant="0.0"/>
+                            <constraint id="78" firstItem="35" firstAttribute="bottom" secondItem="MMQ-IT-qOo" secondAttribute="bottom" constant="0.0"/>
+                            <constraint id="114" firstItem="5" firstAttribute="top" secondItem="MMQ-IT-qOo" secondAttribute="top" constant="0.0"/>
+                            <constraint firstItem="5" firstAttribute="bottom" secondItem="35" secondAttribute="top" constant="0.0" id="119"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Detail" id="cra-N8-TIN"/>
                     <connections>
                         <outlet property="table" destination="5" id="name-outlet-5"/>
+                        <outlet property="toolbar" destination="35" id="name-outlet-35"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="lrm-kH-fPn" sceneMemberID="firstResponder"/>

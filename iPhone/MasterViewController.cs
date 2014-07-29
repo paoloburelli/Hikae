@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using Core;
+using System.IO;
+using System.Xml.Serialization;
+using System.Json;
 
 namespace iPhone
 {
@@ -12,11 +15,14 @@ namespace iPhone
 	{
 		DataSource dataSource;
 		LoadingOverlay loadingOverlay;
+		string saveFilePath;
 
 		public MasterViewController (IntPtr handle) : base (handle)
 		{
 			Title = NSBundle.MainBundle.LocalizedString ("Hikae", "Hikae");
 
+
+			saveFilePath = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments), "lists.html").ToString ();
 			// Custom initialization
 		}
 
@@ -78,6 +84,16 @@ namespace iPhone
 				//TableView.SelectRow (indexPath, true, UITableViewScrollPosition.Top);
 			}
 
+			try {
+				using (TextWriter writer = new StreamWriter(saveFilePath)) {
+					foreach (ToFy.List l in dataSource.objects)
+						writer.WriteLine(l.ToJson().ToString());
+					writer.Close();
+				}
+			} catch (IOException) {
+
+			}
+
 			loadingOverlay.Hide ();
 		}
 
@@ -120,16 +136,37 @@ namespace iPhone
 			// Perform any additional setup after loading the view, typically from a nib.
 			//NavigationItem.LeftBarButtonItem = EditButtonItem;
 
+
+
+
 			var addButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, AddNewItem);
 			NavigationItem.RightBarButtonItem = addButton;
+			addButton.TintColor = UIColor.White;
 
 			TableView.Source = dataSource = new DataSource (this);
+
+			//System.IO.File.Delete (saveFilePath);
+
+			try {
+				using (TextReader reader = new StreamReader(saveFilePath)) {
+					dataSource.objects.Clear();
+
+					string line = reader.ReadLine();
+
+					while (line != null){
+						dataSource.objects.Add(ToFy.List.Parse(JsonValue.Parse(line)));
+						line = reader.ReadLine();
+					}
+					reader.Close();
+				}
+			} catch (IOException) {
+			}
 		}
 
 		class DataSource : UITableViewSource
 		{
 			static readonly NSString CellIdentifier = new NSString ("Cell");
-			readonly List<ToFy.List> objects = new List<ToFy.List> ();
+			public List<ToFy.List> objects = new List<ToFy.List> ();
 			readonly MasterViewController controller;
 
 			public DataSource (MasterViewController controller)
@@ -174,9 +211,7 @@ namespace iPhone
 					// Delete the row from the data source.
 					objects.RemoveAt (indexPath.Row);
 					controller.TableView.DeleteRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Fade);
-				} else if (editingStyle == UITableViewCellEditingStyle.Insert) {
-					// Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
-				}
+				} 
 			}
 
 			/*
@@ -194,6 +229,11 @@ namespace iPhone
 				return true;
 			}
 			*/
+
+			public override string TitleForDeleteConfirmation (UITableView tableView, NSIndexPath indexPath)
+			{  
+				return "Close";
+			}
 		}
 
 		public override void PrepareForSegue (UIStoryboardSegue segue, NSObject sender)
