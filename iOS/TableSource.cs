@@ -2,17 +2,17 @@
 using MonoTouch.UIKit;
 using System.Collections.Generic;
 using MonoTouch.Foundation;
-using Core;
+using tofy;
 using System.Linq;
 using System.Threading;
 
-namespace iPhone
+namespace Hikae
 {
 	public class TableSource : UITableViewSource {
-		public readonly ToFy.List list;
-		string cellIdentifier = "TableCell";
+		public readonly ToList list;
+		string cellIdentifier = "Cell";
 
-		public TableSource (ToFy.List list)
+		public TableSource (ref ToList list)
 		{
 			this.list = list;
 		}
@@ -32,13 +32,16 @@ namespace iPhone
 			cell.TextLabel.Text = list.items[indexPath.Row].ToString();
 
 			if (!list.items [indexPath.Row].synchronized) {
-				cell.BackgroundColor = new UIColor (0.9f, 0.9f, 0.9f, 1.0f);
-				cell.TextLabel.TextColor = UIColor.LightGray;
+				UIActivityIndicatorView spinner = new UIActivityIndicatorView (UIActivityIndicatorViewStyle.Gray);
+				spinner.Frame = new System.Drawing.RectangleF (cell.Frame.Width-34, cell.Frame.Height/2-12, 24, 24);
+				cell.AddSubview(spinner);
+				cell.TextLabel.Text = cell.TextLabel.Text;
+				spinner.StartAnimating ();
 			}
 
-			if (list.items[indexPath.Row].isChecked)
-				cell.Accessory = UITableViewCellAccessory.Checkmark;
 
+			if (list.items [indexPath.Row].isChecked)
+				cell.ImageView.Image = new UIImage ("checkbox-ticked.png");
 
 			return cell;
 		}
@@ -48,40 +51,32 @@ namespace iPhone
 			list.items [indexPath.Row].isChecked = !list.items [indexPath.Row].isChecked;
 			tableView.ReloadRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Automatic);
 
-			setCheckMarkItem (list.name, list.items [indexPath.Row].name, list.password, list.items [indexPath.Row].isChecked);
-		}
-
-		private void setCheckMarkItem(string name,string itemName, string password, bool checkMark) {
-			Action<ToFy.Response> callback = delegate (ToFy.Response response) {
-				if (response.status == ToFy.Status.ConnectionFailed) {
-					Thread.Sleep (1000);
-					setCheckMarkItem(list.name, itemName, list.password,checkMark);
+			Action<Communication.Response> callback = delegate (Communication.Response response) {
+				if (response.status != Communication.Status.Ok) {
+					InvokeOnMainThread(() => {
+						list.items [indexPath.Row].isChecked = !list.items [indexPath.Row].isChecked;
+						tableView.ReloadRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Automatic);
+						MasterViewController.SaveChanges ();
+					});
 				}
 			};
 
-			if (checkMark)
-				ToFy.CheckItem (list.name, itemName, list.password, callback);
+			if (list.items [indexPath.Row].isChecked)
+				Communication.CheckItem (list.name, list.items [indexPath.Row].name, list.password, callback);
 			else
-				ToFy.UncheckItem (list.name, itemName, list.password, callback);
+				Communication.UncheckItem (list.name, list.items [indexPath.Row].name, list.password, callback);
+
 		}
-
-		private void deleteItem(string name,string itemName, string password) {
-			Action<ToFy.Response> callback = delegate (ToFy.Response response) {
-				if (response.status == ToFy.Status.ConnectionFailed) {
-					Thread.Sleep (1000);
-					deleteItem(list.name, itemName, list.password);
-				}
-			};
-
-			ToFy.DeleteItem (list.name, itemName, list.password, callback);
-		}
-
+			
 		public override void CommitEditingStyle (UITableView tableView, UITableViewCellEditingStyle editingStyle, MonoTouch.Foundation.NSIndexPath indexPath)
 		{
 			switch (editingStyle) {
 			case UITableViewCellEditingStyle.Delete:
 
-				deleteItem (list.name, list.items [indexPath.Row].name, list.password);
+				Communication.DeleteItem (list.name, list.items [indexPath.Row].name, list.password, async delegate(Communication.Response response) {
+					if (response.status == Communication.Status.Ok)
+						MasterViewController.SaveChanges ();
+				}) ;
 
 				// remove the item from the underlying data source
 				list.items.RemoveAt (indexPath.Row);
@@ -103,7 +98,7 @@ namespace iPhone
 			if (table != null)
 				table.BeginUpdates ();
 
-			list.items.Insert (0,new ToFy.Item(itemName,false));
+			list.items.Insert (0,new ToItem(itemName,false,false));
 
 			if (table != null) {
 				using (var indexPath = NSIndexPath.FromRowSection (0, 0))
@@ -116,7 +111,7 @@ namespace iPhone
 			if (table != null)
 				table.BeginUpdates ();
 
-			ToFy.Item it = list.items.First(p => p.name == itemName);
+			ToItem it = list.items.First(p => p.name == itemName);
 			it.synchronized = true;
 
 			if (table != null) {

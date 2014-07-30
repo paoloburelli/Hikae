@@ -9,7 +9,7 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.CodeDom.Compiler;
 
-namespace iPhone
+namespace Hikae
 {
 	[Register ("MasterViewController")]
 	partial class MasterViewController

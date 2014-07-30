@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core
+namespace tofy
 {
 	public static class Utils
 	{

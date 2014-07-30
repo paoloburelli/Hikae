@@ -9,10 +9,10 @@ using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using System.CodeDom.Compiler;
 
-namespace iPhone
+namespace Hikae
 {
-	[Register ("DetailViewController")]
-	partial class DetailViewController
+	[Register ("ListViewController")]
+	partial class ListViewController
 	{
 		[Outlet]
 		[GeneratedCode ("iOS Designer", "1.0")]

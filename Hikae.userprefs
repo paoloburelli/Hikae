@@ -1,17 +1,15 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Neko" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="iPhone/MasterViewController.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhoneSimulator" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.IPad.7.1" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="iOS/Main.cs">
     <Files>
-      <File FileName="iPhone/MasterViewController.cs" Line="90" Column="24" />
-      <File FileName="iPhone/TableSource.cs" Line="1" Column="1" />
-      <File FileName="iOS_Core/ToFy.cs" Line="1" Column="1" />
-      <File FileName="iPhone/DetailViewController.cs" Line="1" Column="1" />
+      <File FileName="iOS/TableSource.cs" Line="40" Column="5" />
+      <File FileName="iOS/ListViewController.cs" Line="215" Column="4" />
+      <File FileName="iOS/MasterViewController.cs" Line="37" Column="60" />
+      <File FileName="iOS/Main.cs" Line="17" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/Users/paolo/SourceCode/Apps/Hikae/iPhone/MasterViewController.cs" line="91" column="5" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

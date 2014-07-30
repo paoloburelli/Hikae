@@ -4,11 +4,11 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">iPhoneSimulator</Platform>
     <ProjectTypeGuids>{6BC8ED88-2882-458C-8E55-DFD12B67127B};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>{D01A86CC-3A66-4B26-A17E-B6704DA86632}</ProjectGuid>
+    <ProjectGuid>{DFD58812-676F-4F36-9122-6B4173941E85}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>iPhone</RootNamespace>
+    <RootNamespace>iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>iPhone</AssemblyName>
+    <AssemblyName>iOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +22,9 @@
     <MtouchLink>None</MtouchLink>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchDebug>true</MtouchDebug>
+    <MtouchI18n>
+    </MtouchI18n>
+    <MtouchArch>i386</MtouchArch>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>full</DebugType>
@@ -45,13 +48,7 @@
     <ConsolePause>false</ConsolePause>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignKey>iPhone Developer: Paolo Burelli (ZSRK43FCKJ)</CodesignKey>
-    <IpaPackageName>
-    </IpaPackageName>
-    <MtouchI18n>
-    </MtouchI18n>
-    <MtouchArch>ARMv7</MtouchArch>
-    <CodesignProvision>0826404A-ED6D-45B4-A3EC-F3EB88611741</CodesignProvision>
+    <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -95,9 +92,18 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="System.Json" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\Default-568h%402x.png" />
+    <BundleResource Include="Resources\checkbox.png" />
+    <BundleResource Include="Resources\lock-22.png" />
+    <BundleResource Include="Resources\paper.jpg" />
+    <BundleResource Include="Resources\checkbox-ticked.png" />
+    <BundleResource Include="Resources\Icon-60%402x.png" />
+    <BundleResource Include="Resources\Icon-Small-40%402x.png" />
+    <BundleResource Include="Resources\logo-22.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -110,14 +116,15 @@
     <Compile Include="MasterViewController.designer.cs">
       <DependentUpon>MasterViewController.cs</DependentUpon>
     </Compile>
-    <Compile Include="DetailViewController.cs" />
-    <Compile Include="DetailViewController.designer.cs">
-      <DependentUpon>DetailViewController.cs</DependentUpon>
-    </Compile>
     <Compile Include="LoadingOverlay.cs" />
     <Compile Include="TableSource.cs" />
+    <Compile Include="ListViewController.cs" />
+    <Compile Include="ListViewController.designer.cs">
+      <DependentUpon>ListViewController.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <InterfaceDefinition Include="MainStoryboard_iPad.storyboard" />
     <InterfaceDefinition Include="MainStoryboard.storyboard" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -5,7 +5,7 @@ using System.Linq;
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 
-namespace iPhone
+namespace iOS
 {
 	public class Application
 	{

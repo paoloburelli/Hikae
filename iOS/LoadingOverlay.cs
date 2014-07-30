@@ -25,7 +25,7 @@ public class LoadingOverlay : UIView {
 		activitySpinner = new UIActivityIndicatorView(UIActivityIndicatorViewStyle.WhiteLarge);
 		activitySpinner.Frame = new RectangleF (
 			centerX - (activitySpinner.Frame.Width / 2) ,
-			centerY - activitySpinner.Frame.Height - 20 ,
+			centerY - (activitySpinner.Frame.Height/2) ,
 			activitySpinner.Frame.Width ,
 			activitySpinner.Frame.Height);
 		activitySpinner.AutoresizingMask = UIViewAutoresizing.FlexibleMargins;
@@ -44,7 +44,7 @@ public class LoadingOverlay : UIView {
 		loadingLabel.Text = "Loading Data...";
 		loadingLabel.TextAlignment = UITextAlignment.Center;
 		loadingLabel.AutoresizingMask = UIViewAutoresizing.FlexibleMargins;
-		AddSubview (loadingLabel);
+		//AddSubview (loadingLabel);
 	}
 
 	/// <summary>

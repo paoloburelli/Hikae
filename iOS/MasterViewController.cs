@@ -4,23 +4,39 @@ using System.Collections.Generic;
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
-using Core;
+using tofy;
 using System.IO;
 using System.Xml.Serialization;
 using System.Json;
+using System.Linq;
 
-namespace iPhone
+namespace Hikae
 {
 	public partial class MasterViewController : UITableViewController
 	{
+		private static MasterViewController instance;
+		public static void SaveChanges() {
+			if (instance != null)
+				ToList.Save (instance.dataSource.objects, instance.saveFilePath);
+		}
+
+		public static void RemoveList(ToList list) {
+			if (instance != null) {
+				instance.dataSource.objects.Remove (list);
+				instance.TableView.ReloadData ();
+				SaveChanges ();
+			}
+		}
+
 		DataSource dataSource;
 		LoadingOverlay loadingOverlay;
 		string saveFilePath;
 
 		public MasterViewController (IntPtr handle) : base (handle)
 		{
-			Title = NSBundle.MainBundle.LocalizedString ("Hikae", "Hikae");
+			Title = NSBundle.MainBundle.LocalizedString ("WeJot", "WeJot");
 
+			instance = this;
 
 			saveFilePath = Path.Combine (Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments), "lists.html").ToString ();
 			// Custom initialization
@@ -44,10 +60,10 @@ namespace iPhone
 				loadingOverlay = new LoadingOverlay (UIScreen.MainScreen.Bounds);
 				View.Add (loadingOverlay);
 
-				ToFy.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(ToFy.Response response) {
-					if (response.status == ToFy.Status.NotFound) {
+				Communication.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(Communication.Response response) {
+					if (response.status == Communication.Status.NotFound) {
 						InvokeOnMainThread (() => {
-							ToFy.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(ToFy.Response resp) {
+							Communication.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(Communication.Response resp) {
 								InvokeOnMainThread (() => {
 									handleResponse (resp);
 								});
@@ -62,12 +78,12 @@ namespace iPhone
 			} 
 		}
 
-		private void handleResponse(ToFy.Response response){
+		private void handleResponse(Communication.Response response){
 			switch (response.status) {
-			case ToFy.Status.Ok:
+			case Communication.Status.Ok:
 				gotObject(response.list);
 				break;
-			case ToFy.Status.Unauthorized:
+			case Communication.Status.Unauthorized:
 				wrongPassword ();
 				break;
 			default:
@@ -76,7 +92,7 @@ namespace iPhone
 			}
 		}
 
-		private void gotObject(ToFy.List list) {
+		private void gotObject(ToList list) {
 			dataSource.Objects.Insert (0, list);
 
 			using (var indexPath = NSIndexPath.FromRowSection (0, 0)) {
@@ -84,15 +100,7 @@ namespace iPhone
 				//TableView.SelectRow (indexPath, true, UITableViewScrollPosition.Top);
 			}
 
-			try {
-				using (TextWriter writer = new StreamWriter(saveFilePath)) {
-					foreach (ToFy.List l in dataSource.objects)
-						writer.WriteLine(l.ToJson().ToString());
-					writer.Close();
-				}
-			} catch (IOException) {
-
-			}
+			ToList.Save (dataSource.objects, saveFilePath);
 
 			loadingOverlay.Hide ();
 		}
@@ -109,7 +117,7 @@ namespace iPhone
 			alert.Show ();
 		}
 
-		private void generalError(ToFy.Status status) {
+		private void generalError(Communication.Status status) {
 			UIAlertView alert = new UIAlertView ();
 
 			alert.AddButton ("Ok");
@@ -125,19 +133,19 @@ namespace iPhone
 		{
 			// Releases the view if it doesn't have a superview.
 			base.DidReceiveMemoryWarning ();
-			
+
 			// Release any cached data, images, etc that aren't in use.
 		}
 
 		public override void ViewDidLoad ()
 		{
 			base.ViewDidLoad ();
-			
+
 			// Perform any additional setup after loading the view, typically from a nib.
 			//NavigationItem.LeftBarButtonItem = EditButtonItem;
 
 
-
+			((UITableView)View).BackgroundView = new UIImageView (new UIImage ("paper.jpg"));
 
 			var addButton = new UIBarButtonItem (UIBarButtonSystemItem.Add, AddNewItem);
 			NavigationItem.RightBarButtonItem = addButton;
@@ -147,26 +155,14 @@ namespace iPhone
 
 			//System.IO.File.Delete (saveFilePath);
 
-			try {
-				using (TextReader reader = new StreamReader(saveFilePath)) {
-					dataSource.objects.Clear();
 
-					string line = reader.ReadLine();
-
-					while (line != null){
-						dataSource.objects.Add(ToFy.List.Parse(JsonValue.Parse(line)));
-						line = reader.ReadLine();
-					}
-					reader.Close();
-				}
-			} catch (IOException) {
-			}
+			dataSource.objects = ToList.Load (saveFilePath);
 		}
 
 		class DataSource : UITableViewSource
 		{
 			static readonly NSString CellIdentifier = new NSString ("Cell");
-			public List<ToFy.List> objects = new List<ToFy.List> ();
+			public List<ToList> objects = new List<ToList> ();
 			readonly MasterViewController controller;
 
 			public DataSource (MasterViewController controller)
@@ -174,7 +170,7 @@ namespace iPhone
 				this.controller = controller;
 			}
 
-			public IList<ToFy.List> Objects {
+			public IList<ToList> Objects {
 				get { return objects; }
 			}
 
@@ -240,9 +236,9 @@ namespace iPhone
 		{
 			if (segue.Identifier == "showDetail") {
 				var indexPath = TableView.IndexPathForSelectedRow;
-				var item = dataSource.Objects [indexPath.Row];
+				ToList item = dataSource.Objects [indexPath.Row];
 
-				((DetailViewController)segue.DestinationViewController).SetDetailItem (item);
+				((ListViewController)segue.DestinationViewController).SetDetailItem (ref item);
 			}
 		}
 	}
