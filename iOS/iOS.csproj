@@ -54,6 +54,7 @@
     <MtouchI18n>
     </MtouchI18n>
     <MtouchArch>ARMv7</MtouchArch>
+    <CodesignProvision>0826404A-ED6D-45B4-A3EC-F3EB88611741</CodesignProvision>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>full</DebugType>
@@ -88,8 +89,13 @@
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
-    <CodesignProvision>Automatic:AppStore</CodesignProvision>
-    <CodesignKey>iPhone Distribution</CodesignKey>
+    <CodesignProvision>57BF6918-1627-4F1E-A121-4441C2945AC8</CodesignProvision>
+    <CodesignKey>iPhone Distribution: Paolo Burelli (8WT3WR4698)</CodesignKey>
+    <IpaPackageName>
+    </IpaPackageName>
+    <MtouchI18n>
+    </MtouchI18n>
+    <MtouchArch>ARMv7</MtouchArch>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -97,19 +103,26 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="System.Json" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="Resources\Default-568h%402x.png" />
     <BundleResource Include="Resources\checkbox.png" />
-    <BundleResource Include="Resources\lock-22.png" />
     <BundleResource Include="Resources\paper.jpg" />
     <BundleResource Include="Resources\checkbox-ticked.png" />
-    <BundleResource Include="Resources\Icon-60%402x.png" />
-    <BundleResource Include="Resources\Icon-Small-40%402x.png" />
-    <BundleResource Include="Resources\Default%402x.png" />
     <BundleResource Include="Resources\logo-toolbar.png" />
+    <BundleResource Include="Resources\lock.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon%402x.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-40.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-40%402x.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-60%402x.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-72.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-72%402x.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-76.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-76%402x.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small%402x.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small-50.png" />
+    <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small-50%402x.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -143,5 +156,12 @@
   <ItemGroup>
     <ITunesArtwork Include="iTunesArtwork%402x" />
     <ITunesArtwork Include="iTunesArtwork" />
+  </ItemGroup>
+  <ItemGroup>
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Contents.json" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default.png" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\LaunchImage.launchimage\Default-568h%402x.png" />
+    <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json" />
   </ItemGroup>
 </Project>

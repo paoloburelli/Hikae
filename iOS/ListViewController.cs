@@ -208,7 +208,7 @@ namespace Hikae
 			UIBarButtonItem deleteButton = new UIBarButtonItem(UIBarButtonSystemItem.Trash, DeleteList);
 			UIBarButtonItem emptySpace = new UIBarButtonItem (UIBarButtonSystemItem.FlexibleSpace);
 
-			UIImage lockIcon = new UIImage ("lock-22.png");
+			UIImage lockIcon = new UIImage ("lock.png");
 			UIBarButtonItem changePassword = new UIBarButtonItem (lockIcon, UIBarButtonItemStyle.Plain,  ChangePassword);
 
 

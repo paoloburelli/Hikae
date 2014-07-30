@@ -73,7 +73,7 @@ namespace Hikae
 			switch (editingStyle) {
 			case UITableViewCellEditingStyle.Delete:
 
-				Communication.DeleteItem (list.name, list.items [indexPath.Row].name, list.password, async delegate(Communication.Response response) {
+				Communication.DeleteItem (list.name, list.items [indexPath.Row].name, list.password, delegate(Communication.Response response) {
 					if (response.status == Communication.Status.Ok)
 						MasterViewController.SaveChanges ();
 				}) ;
