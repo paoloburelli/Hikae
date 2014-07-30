@@ -34,7 +34,7 @@ namespace Hikae
 
 		public MasterViewController (IntPtr handle) : base (handle)
 		{
-			Title = NSBundle.MainBundle.LocalizedString ("WeJot", "WeJot");
+			Title = NSBundle.MainBundle.LocalizedString ("Lists", "Lists");
 
 			instance = this;
 
@@ -153,8 +153,8 @@ namespace Hikae
 
 			TableView.Source = dataSource = new DataSource (this);
 
-			//System.IO.File.Delete (saveFilePath);
 
+			NavigationItem.TitleView = new UIImageView (new UIImage ("logo-toolbar.png"));
 
 			dataSource.objects = ToList.Load (saveFilePath);
 		}
