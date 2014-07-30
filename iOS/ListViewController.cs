@@ -256,16 +256,24 @@ namespace Hikae
 			UIAlertView parent_alert = (UIAlertView)sender;
 
 			if (args.ButtonIndex == 0) {
-				if (!tableSource.contains(parent_alert.GetTextField (0).Text)) {
-					tableSource.addItem (parent_alert.GetTextField (0).Text, table);
-					Communication.AddItem (tableSource.list.name, parent_alert.GetTextField (0).Text, tableSource.list.password, delegate(Communication.Response response) {
-						if (response.status == Communication.Status.Ok){
-							InvokeOnMainThread(() =>{
-								tableSource.updateItem(parent_alert.GetTextField (0).Text,true,table);
-								MasterViewController.SaveChanges ();
-							});
-						}
-					});
+				if (parent_alert.GetTextField (0).Text != "") {
+					if (!tableSource.contains (parent_alert.GetTextField (0).Text)) {
+						tableSource.addItem (parent_alert.GetTextField (0).Text, table);
+						Communication.AddItem (tableSource.list.name, parent_alert.GetTextField (0).Text, tableSource.list.password, delegate(Communication.Response response) {
+							if (response.status == Communication.Status.Ok) {
+								InvokeOnMainThread (() => {
+									tableSource.updateItem (parent_alert.GetTextField (0).Text, true, table);
+									MasterViewController.SaveChanges ();
+								});
+							}
+						});
+					}
+				} else {
+					UIAlertView erAlert = new UIAlertView ();
+					erAlert.AddButton ("OK");
+					erAlert.Message = "The item's name can't be empty";
+					erAlert.Clicked += AddNewItem;
+					erAlert.Show();
 				}
 			}
 		}

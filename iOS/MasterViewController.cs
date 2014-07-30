@@ -57,24 +57,32 @@ namespace Hikae
 			UIAlertView parent_alert = (UIAlertView)sender;
 
 			if (args.ButtonIndex == 0) {
-				loadingOverlay = new LoadingOverlay (UIScreen.MainScreen.Bounds);
-				View.Add (loadingOverlay);
+				if (parent_alert.GetTextField (0).Text != "") {
+					loadingOverlay = new LoadingOverlay (UIScreen.MainScreen.Bounds);
+					View.Add (loadingOverlay);
 
-				Communication.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(Communication.Response response) {
-					if (response.status == Communication.Status.NotFound) {
-						InvokeOnMainThread (() => {
-							Communication.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(Communication.Response resp) {
-								InvokeOnMainThread (() => {
-									handleResponse (resp);
+					Communication.GetList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(Communication.Response response) {
+						if (response.status == Communication.Status.NotFound) {
+							InvokeOnMainThread (() => {
+								Communication.AddList (parent_alert.GetTextField (0).Text, parent_alert.GetTextField (1).Text, delegate(Communication.Response resp) {
+									InvokeOnMainThread (() => {
+										handleResponse (resp);
+									});
 								});
 							});
-						});
-					} else {
-						InvokeOnMainThread (() => {
-							handleResponse (response);
-						});
-					}
-				});
+						} else {
+							InvokeOnMainThread (() => {
+								handleResponse (response);
+							});
+						}
+					});
+				} else {
+					UIAlertView erAlert = new UIAlertView ();
+					erAlert.AddButton ("OK");
+					erAlert.Message = "The lists's name can't be empty";
+					erAlert.Clicked += AddNewItem;
+					erAlert.Show();
+				}
 			} 
 		}
 
