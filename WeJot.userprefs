@@ -1,11 +1,10 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="AppStore|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Neko" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Neko" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="iOS_Core/Communication.cs">
     <Files>
-      <File FileName="iOS/TableSource.cs" Line="1" Column="1" />
-      <File FileName="iOS/ListViewController.cs" Line="211" Column="41" />
+      <File FileName="iOS/TableSource.cs" Line="76" Column="90" />
       <File FileName="iOS/MasterViewController.cs" Line="1" Column="1" />
-      <File FileName="iOS/Main.cs" Line="1" Column="1" />
+      <File FileName="iOS_Core/Communication.cs" Line="14" Column="53" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -11,7 +11,7 @@ namespace tofy
 	{
 		public enum Status {BadSyntax=400,Unauthorized=401,NotFound=404,Conflict=409,PreconditionFailed=412,Locket=423,Ok=200,ConnectionFailed=666};
 		public enum Method {GET,PUT,DELETE};
-		public const string CLIENT_URL = "http://localhost:3000/api/v1/";//"http://tofy.herokuapp.com/api/v1/";
+		public const string CLIENT_URL = "http://tofy-test.herokuapp.com/api/v1/";
 		public const float WAIT_TIME = 10;
 
 		public class Response {
