@@ -43,6 +43,8 @@
     <Compile Include="Utils.cs" />
     <Compile Include="Communication.cs" />
     <Compile Include="ToList.cs" />
+    <Compile Include="Device.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />
 </Project>

@@ -2,8 +2,10 @@
 
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
+using tofy;
+using MonoTouch.AddressBook;
 
-namespace iPhone
+namespace Hikae
 {
 	// The UIApplicationDelegate for the application. This class is responsible for launching the
 	// User Interface of the application, as well as listening (and optionally responding) to
@@ -42,6 +44,25 @@ namespace iPhone
 		// This method is called when the application is about to terminate. Save data, if needed.
 		public override void WillTerminate (UIApplication application)
 		{
+		}
+
+		public override void FinishedLaunching (UIApplication application)
+		{
+			UIRemoteNotificationType notificationTypes = UIRemoteNotificationType.Alert | UIRemoteNotificationType.Badge | UIRemoteNotificationType.Sound;
+			UIApplication.SharedApplication.RegisterForRemoteNotificationTypes(notificationTypes);
+		}
+
+		public override void RegisteredForRemoteNotifications (
+			UIApplication application, NSData deviceToken)
+		{
+			Device.Token = deviceToken.ToString();
+		}
+
+		public override void DidReceiveRemoteNotification (UIApplication application, NSDictionary userInfo, Action<UIBackgroundFetchResult> completionHandler)
+		{
+
+			//((MasterViewController)((UINavigationController)Window.RootViewController).ViewControllers[0]).RefreshLists ();
+			application.ApplicationIconBadgeNumber = 0;
 		}
 	}
 }

@@ -4,12 +4,13 @@ using MonoTouch.UIKit;
 using System.CodeDom.Compiler;
 using tofy;
 using System.Threading;
+using System.Net;
 
 namespace Hikae
 {
 	partial class ListViewController : UIViewController
 	{
-		TableSource tableSource;
+		ListSource tableSource;
 		UIAlertView alert;
 		LoadingOverlay loadingOverlay;
 
@@ -17,39 +18,32 @@ namespace Hikae
 		{
 		}
 
-		public void SetDetailItem (ref ToList newDetailItem)
+		public void SetSource (ListSource ls)
 		{
-
-			if (tableSource == null){
-				if (newDetailItem != null)
-					tableSource = new TableSource (ref newDetailItem);
-			} else if(tableSource.list != newDetailItem) {
-				tableSource = new TableSource(ref newDetailItem);
-			}
-
+			this.tableSource = ls;
 			ConfigureView ();
 		}
 
 		void ConfigureView ()
 		{
 			// Update the user interface for the detail item
-			if (IsViewLoaded && tableSource != null && tableSource.list != null) {
+			if (IsViewLoaded && tableSource != null && tableSource.List != null) {
 
 				table.Source = tableSource;
 
-				Title = tableSource.list.ToString ();
+				Title = tableSource.List.ToString ();
 				loadingOverlay = new LoadingOverlay (View.Frame);
 				View.Add (loadingOverlay);
 
-				Communication.GetList (tableSource.list.name,tableSource.list.password,delegate(Communication.Response response){
+				Communication.GetList (tableSource.List.Name,tableSource.List.Password,delegate(Communication.Response response){
 					InvokeOnMainThread ( () => {
-						switch(response.status) {
-						case Communication.Status.Ok:
-							tableSource.list.items = response.list.items;
+						switch(response.Status) {
+						case HttpStatusCode.OK:
+							tableSource.List.Items = response.List.Items;
 							table.ReloadData();
 							loadingOverlay.Hide ();
 							break;
-						case Communication.Status.NotFound: 
+						case HttpStatusCode.NotFound: 
 							alert = new UIAlertView ();
 
 							alert.AddButton ("Ok");
@@ -61,7 +55,7 @@ namespace Hikae
 							}; 
 							alert.Show ();
 							break;
-						case Communication.Status.Unauthorized:
+						case HttpStatusCode.Unauthorized:
 							alert = new UIAlertView ();
 
 							alert.AddButton ("Ok");
@@ -111,23 +105,23 @@ namespace Hikae
 			alert.Clicked += (object parent_sender, UIButtonEventArgs e) => {
 				if (e.ButtonIndex == 0) {
 					View.Add (loadingOverlay);
-					Communication.DeleteList(tableSource.list.name,tableSource.list.password,delegate(Communication.Response response) {
+					Communication.DeleteList(tableSource.List.Name,tableSource.List.Password,delegate(Communication.Response response) {
 						InvokeOnMainThread(() => {
 							loadingOverlay.Hide();
-							if (response.status == Communication.Status.Ok) {
-								MasterViewController.RemoveList(tableSource.list);
+							if (response.Status == HttpStatusCode.OK) {
+								//MasterViewController.RemoveList(tableSource.list);
 								NavigationController.PopViewControllerAnimated(true);
 							}
 						});
 					});
 				} else if (e.ButtonIndex == 1) {
 					View.Add (loadingOverlay);
-					Communication.DeleteAllItems (tableSource.list.name, tableSource.list.password, delegate(Communication.Response response) {
+					Communication.DeleteAllItems (tableSource.List.Name, tableSource.List.Password, delegate(Communication.Response response) {
 						InvokeOnMainThread(() => {
-							if (response.status == Communication.Status.Ok) {
-								tableSource.list.items.Clear();
+							if (response.Status == HttpStatusCode.OK) {
+								tableSource.List.Items.Clear();
 								table.ReloadData ();
-								MasterViewController.SaveChanges ();
+								//MasterViewController.SaveChanges ();
 							} else {
 								alert = new UIAlertView ();
 								table.ReloadData();
@@ -157,21 +151,21 @@ namespace Hikae
 			alert.Clicked += (object parent_sender, UIButtonEventArgs be) => {
 				if (be.ButtonIndex == 0) {
 					if (alert.GetTextField (0).Text == alert.GetTextField (1).Text){
-						Communication.ChangePassword(tableSource.list.name,tableSource.list.password,alert.GetTextField(0).Text,delegate(Communication.Response response) {
+						Communication.ChangePassword(tableSource.List.Name,tableSource.List.Password,alert.GetTextField(0).Text,delegate(Communication.Response response) {
 							InvokeOnMainThread(() => {
-								if (response.status == Communication.Status.Ok){
-									tableSource.list.password = alert.GetTextField (0).Text;
+								if (response.Status == HttpStatusCode.OK){
+									tableSource.List.Password = alert.GetTextField (0).Text;
 
 									UIAlertView okAlert = new UIAlertView ();
 									okAlert.AddButton ("OK");
 									okAlert.Message = "Password changed successfuly";
 									okAlert.Show();
 
-									MasterViewController.SaveChanges();
+									//MasterViewController.SaveChanges();
 								} else {
 									UIAlertView noAlert = new UIAlertView ();
 									noAlert.AddButton ("OK");
-									noAlert.Message = "Password not set, error: "+response.status;
+									noAlert.Message = "Password not set, error: "+response.Status;
 									noAlert.Show();
 								}
 							});
@@ -188,12 +182,12 @@ namespace Hikae
 		}
 
 		void refresh (UIRefreshControl refreshControl=null){
-			Communication.GetList(tableSource.list.name,tableSource.list.password,delegate(Communication.Response response) {
+			Communication.GetList(tableSource.List.Name,tableSource.List.Password,delegate(Communication.Response response) {
 				InvokeOnMainThread(() => {
-					if (response.status == Communication.Status.Ok){
-						tableSource.list.items = response.list.items;
+					if (response.Status == HttpStatusCode.OK){
+						tableSource.List.Items = response.List.Items;
 						table.ReloadData();
-						MasterViewController.SaveChanges();
+						//MasterViewController.SaveChanges();
 					}
 					if (refreshControl != null)
 						refreshControl.EndRefreshing();
@@ -259,11 +253,11 @@ namespace Hikae
 				if (parent_alert.GetTextField (0).Text != "") {
 					if (!tableSource.contains (parent_alert.GetTextField (0).Text)) {
 						tableSource.addItem (parent_alert.GetTextField (0).Text, table);
-						Communication.AddItem (tableSource.list.name, parent_alert.GetTextField (0).Text, tableSource.list.password, delegate(Communication.Response response) {
-							if (response.status == Communication.Status.Ok) {
+						Communication.AddItem (tableSource.List.Name, parent_alert.GetTextField (0).Text, tableSource.List.Password, delegate(Communication.Response response) {
+							if (response.Status == HttpStatusCode.OK) {
 								InvokeOnMainThread (() => {
 									tableSource.updateItem (parent_alert.GetTextField (0).Text, true, table);
-									MasterViewController.SaveChanges ();
+									//MasterViewController.SaveChanges ();
 								});
 							}
 						});

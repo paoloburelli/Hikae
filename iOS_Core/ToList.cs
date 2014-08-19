@@ -8,89 +8,72 @@ namespace tofy
 {
 	public class ToList
 	{
-		public string name;
-		public string password;
-		public List<ToItem> items;
-
-
-		public static List<ToList> Load(string filePath){
-			List<ToList> rVal = new List<ToList>();
-			try {
-				using (TextReader reader = new StreamReader(filePath)) {
-					string line = reader.ReadLine();
-					while (line != null){
-						rVal.Add(ToList.Parse(JsonValue.Parse(line)));
-						line = reader.ReadLine();
-					}
-					reader.Close();
-				}
-			} catch (IOException) {
+		public string Name;
+		public string Password;
+		public List<ToItem> Items {
+			get { return _items; 
 			}
-
-			return rVal;
-		}
-
-		public static void Save(List<ToList> lists, string filePath){
-			try {
-				using (TextWriter writer = new StreamWriter(filePath)) {
-					foreach (ToList l in lists)
-						writer.WriteLine(l.ToJson().ToString());
-					writer.Close();
-				}
-			} catch (IOException) {
-
+			set {
+				Changes = Math.Abs (_items.Count - value.Count);
+				_items = value;
 			}
 		}
+
+		private List<ToItem> _items = new List<ToItem>();
+		public int Changes=0;
+
+
+
 
 		public static ToList Parse(
 			JsonValue value) {
-			JsonArray a = (JsonArray)value ["list_items"];
+			JsonArray a = (JsonArray)value ["items"];
 
 
 			string password=null;
 			try {
-				password = value ["list_password"];
+				password = value ["password"];
 			} catch (Exception){
 			}
 
 			List<ToItem> l = new List<ToItem> ();
 			foreach (JsonValue v in a) {
-				l.Insert (0, new ToItem (v["name"].ToString ().Trim ('"'),(bool)v["checked"],true));
+				l.Insert (0, ToItem.Parse(v));
 			}
 
-			return new ToList (value["list_name"].ToString().Trim('"'), l, password);
+			return new ToList (value["name"].ToString().Trim('"'), l, password);
 		}
 
-		internal ToList (string name, List<ToItem> items, string password = null){
-			this.password = password;
-			this.name = name;
-			this.items = items;
+		public ToList (string name, List<ToItem> items, string password = null){
+			this.Password = password;
+			this.Name = name;
+			this.Items = items;
 		}
 
 		public override string ToString ()
 		{
-			return name;
+			return Name;
 		}
 
 		public JsonObject ToJson ()
 		{
 			JsonObject jo = new JsonObject ();
-			jo.Add ("list_name", new JsonPrimitive (name));
-			jo.Add ("list_password", new JsonPrimitive (password));
+			jo.Add ("name", new JsonPrimitive (Name));
+			jo.Add ("password", new JsonPrimitive (Password));
 
-			List<JsonObject> jitms = new List<JsonObject>();
-			foreach(ToItem i in items)
+			List<JsonValue> jitms = new List<JsonValue>();
+			foreach(ToItem i in Items)
 				jitms.Insert(0,i.ToJson());
 
-			jo.Add ("list_items", new JsonArray(jitms));
+			jo.Add ("items", new JsonArray(jitms));
 			return jo;
 		}
 
 		public bool synchronized{
 			get {
 				bool rVal = true;
-				foreach (ToItem i in items)
-					if (!i.synchronized) {
+				foreach (ToItem i in Items)
+					if (!i.Synchronized) {
 						rVal = false;
 						break;
 					}
@@ -100,29 +83,48 @@ namespace tofy
 	}
 
 	public class ToItem {
-		public bool synchronized { 
+		public bool Synchronized { 
 			get; 
 			set; 
 		}
-		public bool isChecked;
-		public string name;
+		public bool Checked;
+		public string Name;
+		public string LastAuthor;
 
-		public ToItem (string name, bool isChecked, bool synchronized){
-			this.name = name;
-			this.synchronized = synchronized;
-			this.isChecked = isChecked;
+		public ToItem (string name, bool isChecked=false, string author="Someone", bool synchronized=false){
+			this.Name = name;
+			this.Synchronized = synchronized;
+			this.Checked = isChecked;
+			this.LastAuthor = author;
 		}
 
 		public override string ToString ()
 		{
-			return name;
+			return Name;
 		}
 
-		public JsonObject ToJson(){
+		public JsonValue ToJson(){
 			JsonObject j = new JsonObject ();
-			j ["name"] = name;
-			j ["checked"] = isChecked;
+			j ["name"] = Name;
+			j ["checked"] = Checked;
 			return j;
+		}
+
+		public static ToItem Parse(JsonValue jo) {
+			string name = "";
+			if (jo.ContainsKey ("name"))
+				name = jo ["name"].ToString ().Trim ('"');
+
+			bool isChecked = false;
+			if (jo.ContainsKey("checked"))
+				isChecked = (bool)jo ["checked"];
+
+			string lastAuthor = "Someone";
+			if (jo.ContainsKey("last_author"))
+				lastAuthor = jo ["last_author"].ToString ().Trim ('"');
+
+
+			return new ToItem (name, isChecked, lastAuthor, true);
 		}
 	}
 }

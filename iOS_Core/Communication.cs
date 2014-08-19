@@ -4,111 +4,141 @@ using System.Threading;
 using System.IO;
 using System.Json;
 using System.Collections.Generic;
+using System.Text;
 
 namespace tofy
 {
 	public static class Communication
 	{
-		public enum Status {BadSyntax=400,Unauthorized=401,NotFound=404,Conflict=409,PreconditionFailed=412,Locket=423,Ok=200,ConnectionFailed=666};
-		public enum Method {GET,PUT,DELETE};
-		public const string CLIENT_URL = "http://tofy-test.herokuapp.com/api/v1/";
+		public enum Method {GET,PUT,DELETE,POST,PATCH};
+		public const string CLIENT_URL = "https://tofy-test.herokuapp.com/api/v1/";
+		//public const string CLIENT_URL = "http://localhost:3000/api/v1/";
 		public const float WAIT_TIME = 10;
 
 		public class Response {
-			public Status status { get; set; }
-			public ToList list { get; set; }
+			public readonly HttpStatusCode Status;
+			public readonly ToList List;
+			public readonly ToItem Item;
 
-			public static Response Parse(string jsonString) {
-				JsonValue v = JsonObject.Parse (jsonString);
-
-				try {
-					return new Response (((int)v["status"]),ToList.Parse(v["data"]));
-				} catch (KeyNotFoundException){
-					return new Response (((int)v["status"]),null);
+			public Response (HttpStatusCode status, string content) {
+				this.Status = status;
+				if (status == HttpStatusCode.OK) {
+					content = content.Trim('\\');
+					JsonValue jv = JsonObject.Parse(content);
+					if (jv.ContainsKey("checked"))
+						Item = ToItem.Parse(jv);
+					else 
+						List = ToList.Parse(jv);
 				}
-
 			}
 
-			internal Response (int status, ToList data){
-				this.status = (Status)status;
-				this.list = data;
+			public Response (HttpStatusCode status, ToList data){
+				this.Status = status;
+				this.List = data;
 			}
 
-			internal Response (Status status, ToList data){
-				this.status = status;
-				this.list = data;
+			public Response (HttpStatusCode status, ToItem data){
+				this.Status = status;
+				this.Item = data;
+			}
+
+			public Response(HttpStatusCode status){
+				this.Status = status;
+			}
+
+			private static Response _ServiceUnavailable = new Response(HttpStatusCode.ServiceUnavailable);
+			public static Response ServiceUnavailable{
+				get {
+					return _ServiceUnavailable;
+				}
 			}
 		}
 
-		private static void makeRequest(string resource, string password, Method method, bool repeat, Action<Response> callback, string extraHeaderKey=null, string extraHeaderValue=null){
-			ThreadPool.QueueUserWorkItem (a => receive (resource, password, method, repeat, callback, extraHeaderKey,extraHeaderValue));
+		private static void makeRequest(string resource, string password, Method method, bool repeat, Action<Response> callback, string body="{}"){
+			ThreadPool.QueueUserWorkItem (a => receive (resource, password, method, repeat, callback,body));
 		}
 
-		private static void receive(string resource, string password, Method method, bool repeat, Action<Response> callback,string extraHeaderKey=null, string extraHeaderValue=null){
-			Response r;
+		private static void receive(string resource, string password, Method method, bool repeat, Action<Response> callback, string body="{}"){
+			Response response;
 			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(CLIENT_URL+resource);
 			if (password != null && password != "")
-				request.Headers ["password"] = Utils.Base64Encode(password);
+				request.Headers ["Authorization"] = Utils.Base64Encode(":"+password);
 
-			if (extraHeaderKey != null && extraHeaderValue != null)
-				request.Headers [extraHeaderKey] = Utils.Base64Encode(extraHeaderValue);
-				
+			request.Headers ["Device-Id"] = Device.Token;
+
+			request.Headers ["Author"] = Device.Name;
+	
 			request.Method = method.ToString();
 
-			try {
-				HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-				TextReader tr = new StreamReader (response.GetResponseStream ());
-				r = Response.Parse (tr.ReadToEnd ());
-				if (r.list != null && password != null)
-					r.list.password = password;
+			if (method == Method.POST || method == Method.PATCH || method == Method.PUT) {
+				byte[] requestBytes = new ASCIIEncoding ().GetBytes (body);
+				request.ContentType = "application/json";
+				request.ContentLength = requestBytes.Length;
+				Stream requestStream = request.GetRequestStream ();
+				requestStream.Write (requestBytes, 0, requestBytes.Length);
+			}
 
-				response.Close();
-			} catch (WebException) {
-				r = new Response(Status.ConnectionFailed,null);	
+			try {
+				HttpWebResponse r = (HttpWebResponse)request.GetResponse();
+				TextReader tr = new StreamReader (r.GetResponseStream ());
+				string content = tr.ReadToEnd ();
+
+				response = new Response(r.StatusCode,content);
+		
+				r.Close();
+			} catch (WebException e) {
+				if (e.Response == null)
+					response = new Response (HttpStatusCode.ServiceUnavailable);
+				else
+					response = new Response(((HttpWebResponse)e.Response).StatusCode);	
 				request.Abort ();
 			}
 
-			if (r.status == Status.ConnectionFailed && repeat) {
+			if (response.Status == HttpStatusCode.ServiceUnavailable && repeat) {
 				Thread.Sleep ((int)(WAIT_TIME * 1000));
-				receive (resource, password, method, repeat, callback);
+				receive (resource, password, method, repeat, callback,body);
 			} else
-				callback (r);
+				callback (response);
 		}
 
 		public static void AddList(string listName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName, password, Method.PUT, false, callback);
+			JsonObject jo = new JsonObject ();
+			jo ["name"] = listName;
+			makeRequest ("lists/", password, Method.POST, false, callback,jo.ToString());
 		}
 
 		public static void GetList(string listName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName, password, Method.GET, false, callback);
+			makeRequest ("lists/" + listName, password, Method.GET, false, callback);
 		}
 			
 		public static void DeleteList(string listName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName, password, Method.DELETE, false, callback);
+			makeRequest ("lists/" + listName, password, Method.DELETE, false, callback);
 		}
 
 		public static void ChangePassword(string listName, string password, string newPassword, Action<Response> callback) {
-			makeRequest ("list/" + listName + "/password", password, Method.PUT, true, callback, "newpassword", newPassword);
+			JsonObject jo = new JsonObject ();
+			jo ["password"] = newPassword;
+			makeRequest ("lists/" + listName, password, Method.PATCH, true, callback,jo.ToString());
 		}
 
 		public static void AddItem(string listName,string itemName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName+"/item/"+itemName, password, Method.PUT, true, callback);
+			JsonObject jo = new JsonObject ();
+			jo ["name"] = itemName;
+			makeRequest ("lists/" + listName+"/items/", password, Method.PUT, true, callback,jo.ToString());
 		}
 
 		public static void DeleteItem(string listName,string itemName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName+"/item/"+itemName, password, Method.DELETE, true, callback);
+			makeRequest ("lists/" + listName+"/items/"+itemName, password, Method.DELETE, true, callback);
 		}
 
 		public static void DeleteAllItems(string listName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName+"/allitems", password, Method.DELETE, false, callback);
+			makeRequest ("lists/" + listName+"/allitems", password, Method.DELETE, false, callback);
 		}
 
-		public static void CheckItem(string listName,string itemName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName+"/item/"+itemName+"/checkmark", password, Method.PUT , true, callback);
-		}
-
-		public static void UncheckItem(string listName,string itemName, string password, Action<Response> callback) {
-			makeRequest ("list/" + listName+"/item/"+itemName+"/checkmark", password, Method.DELETE , true, callback);
+		public static void CheckItem(string listName,string itemName, string password, Action<Response> callback, bool check=true) {
+			JsonObject jo = new JsonObject ();
+			jo ["checked"] = check;
+			makeRequest ("lists/" + listName+"/items/"+itemName, password, Method.PATCH , true, callback,jo.ToString());
 		}
 	}
 }

@@ -5,20 +5,28 @@ using MonoTouch.Foundation;
 using tofy;
 using System.Linq;
 using System.Threading;
+using System.Net;
 
 namespace Hikae
 {
-	public class TableSource : UITableViewSource {
-		public readonly ToList list;
+	public class ListSource : UITableViewSource {
+		private int index;
+		public ToList List {
+			get {
+				return Catalog.Instance.Lists [index];
+			}
+		}
 		string cellIdentifier = "Cell";
 
-		public TableSource (ref ToList list)
+
+
+		public ListSource (int index)
 		{
-			this.list = list;
+			this.index = index;
 		}
 		public override int RowsInSection (UITableView tableview, int section)
 		{
-			return list.items.Count;
+			return Catalog.Instance.Lists[index].Items.Count;
 		}
 		public override UITableViewCell GetCell (UITableView tableView, MonoTouch.Foundation.NSIndexPath indexPath)
 		{
@@ -29,9 +37,9 @@ namespace Hikae
 
 			cell.SelectionStyle = UITableViewCellSelectionStyle.None;
 
-			cell.TextLabel.Text = list.items[indexPath.Row].ToString();
+			cell.TextLabel.Text = Catalog.Instance.Lists[index].Items[indexPath.Row].ToString();
 
-			if (!list.items [indexPath.Row].synchronized) {
+			if (!Catalog.Instance.Lists[index].Items [indexPath.Row].Synchronized) {
 				UIActivityIndicatorView spinner = new UIActivityIndicatorView (UIActivityIndicatorViewStyle.Gray);
 				spinner.Frame = new System.Drawing.RectangleF (cell.Frame.Width-34, cell.Frame.Height/2-12, 24, 24);
 				cell.AddSubview(spinner);
@@ -40,7 +48,7 @@ namespace Hikae
 			}
 
 
-			if (list.items [indexPath.Row].isChecked)
+			if (Catalog.Instance.Lists[index].Items [indexPath.Row].Checked)
 				cell.ImageView.Image = new UIImage ("checkbox-ticked.png");
 
 			return cell;
@@ -48,24 +56,23 @@ namespace Hikae
 
 		public override void RowSelected (UITableView tableView, NSIndexPath indexPath)
 		{
-			list.items [indexPath.Row].isChecked = !list.items [indexPath.Row].isChecked;
+			Catalog.Instance.Lists[index].Items [indexPath.Row].Checked = !Catalog.Instance.Lists[index].Items [indexPath.Row].Checked;
 			tableView.ReloadRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Automatic);
 
 			Action<Communication.Response> callback = delegate (Communication.Response response) {
-				if (response.status != Communication.Status.Ok) {
+				if (response.Status != HttpStatusCode.Created) {
 					InvokeOnMainThread(() => {
-						list.items [indexPath.Row].isChecked = !list.items [indexPath.Row].isChecked;
+						Catalog.Instance.Lists[index].Items [indexPath.Row].Checked = !Catalog.Instance.Lists[index].Items [indexPath.Row].Checked;
 						tableView.ReloadRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Automatic);
-						MasterViewController.SaveChanges ();
+						//MasterViewController.SaveChanges ();
 					});
 				}
 			};
 
-			if (list.items [indexPath.Row].isChecked)
-				Communication.CheckItem (list.name, list.items [indexPath.Row].name, list.password, callback);
-			else
-				Communication.UncheckItem (list.name, list.items [indexPath.Row].name, list.password, callback);
-
+			Communication.CheckItem (Catalog.Instance.Lists[index].Name, Catalog.Instance.Lists[index].Items [indexPath.Row].Name, Catalog.Instance.Lists[index].Password, 
+				callback,
+				Catalog.Instance.Lists[index].Items [indexPath.Row].Checked
+			);
 		}
 			
 		public override void CommitEditingStyle (UITableView tableView, UITableViewCellEditingStyle editingStyle, MonoTouch.Foundation.NSIndexPath indexPath)
@@ -73,13 +80,13 @@ namespace Hikae
 			switch (editingStyle) {
 			case UITableViewCellEditingStyle.Delete:
 
-				Communication.DeleteItem (list.name, list.items [indexPath.Row].name, list.password, delegate(Communication.Response response) {
-					if (response.status == Communication.Status.Ok)
-						MasterViewController.SaveChanges ();
+				Communication.DeleteItem (Catalog.Instance.Lists[index].Name, Catalog.Instance.Lists[index].Items [indexPath.Row].Name, Catalog.Instance.Lists[index].Password, delegate(Communication.Response response) {
+					//if (response.Status == HttpStatusCode.OK)
+						//MasterViewController.SaveChanges ();
 				}) ;
 
 				// remove the item from the underlying data source
-				list.items.RemoveAt (indexPath.Row);
+				Catalog.Instance.Lists[index].Items.RemoveAt (indexPath.Row);
 				// delete the row from the table
 				tableView.DeleteRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Fade);
 
@@ -98,7 +105,7 @@ namespace Hikae
 			if (table != null)
 				table.BeginUpdates ();
 
-			list.items.Insert (0,new ToItem(itemName,false,false));
+			Catalog.Instance.Lists[index].Items.Insert (0,new ToItem(itemName));
 
 			if (table != null) {
 				using (var indexPath = NSIndexPath.FromRowSection (0, 0))
@@ -111,17 +118,17 @@ namespace Hikae
 			if (table != null)
 				table.BeginUpdates ();
 
-			ToItem it = list.items.First(p => p.name == itemName);
-			it.synchronized = true;
+			ToItem it = Catalog.Instance.Lists[index].Items.First(p => p.Name == itemName);
+			it.Synchronized = true;
 
 			if (table != null) {
 				table.EndUpdates ();
-				table.ReloadRows (new NSIndexPath[]{ NSIndexPath.FromRowSection (list.items.IndexOf (it), 0) }, UITableViewRowAnimation.Fade);
+				table.ReloadRows (new NSIndexPath[]{ NSIndexPath.FromRowSection (Catalog.Instance.Lists[index].Items.IndexOf (it), 0) }, UITableViewRowAnimation.Fade);
 			}
 		}
 
 		public bool contains(string itemName){
-			return list.items.Count (p => p.ToString () == itemName) != 0;
+			return Catalog.Instance.Lists[index].Items.Count (p => p.ToString () == itemName) != 0;
 		}
 	}
 }
