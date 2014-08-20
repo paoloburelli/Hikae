@@ -70,15 +70,18 @@ namespace tofy
 	
 			request.Method = method.ToString();
 
-			if (method == Method.POST || method == Method.PATCH || method == Method.PUT) {
-				byte[] requestBytes = new ASCIIEncoding ().GetBytes (body);
-				request.ContentType = "application/json";
-				request.ContentLength = requestBytes.Length;
-				Stream requestStream = request.GetRequestStream ();
-				requestStream.Write (requestBytes, 0, requestBytes.Length);
-			}
-
 			try {
+
+				if (method == Method.POST || method == Method.PATCH || method == Method.PUT) {
+					byte[] requestBytes = new ASCIIEncoding ().GetBytes (body);
+					request.ContentType = "application/json";
+					request.ContentLength = requestBytes.Length;
+					Stream requestStream = request.GetRequestStream ();
+					requestStream.Write (requestBytes, 0, requestBytes.Length);
+				}
+
+
+
 				HttpWebResponse r = (HttpWebResponse)request.GetResponse();
 				TextReader tr = new StreamReader (r.GetResponseStream ());
 				string content = tr.ReadToEnd ();
@@ -118,13 +121,13 @@ namespace tofy
 		public static void ChangePassword(string listName, string password, string newPassword, Action<Response> callback) {
 			JsonObject jo = new JsonObject ();
 			jo ["password"] = newPassword;
-			makeRequest ("lists/" + listName, password, Method.PATCH, true, callback,jo.ToString());
+			makeRequest ("lists/" + listName + "/password", password, Method.PUT, true, callback,jo.ToString());
 		}
 
 		public static void AddItem(string listName,string itemName, string password, Action<Response> callback) {
 			JsonObject jo = new JsonObject ();
 			jo ["name"] = itemName;
-			makeRequest ("lists/" + listName+"/items/", password, Method.PUT, true, callback,jo.ToString());
+			makeRequest ("lists/" + listName+"/items/", password, Method.POST, true, callback,jo.ToString());
 		}
 
 		public static void DeleteItem(string listName,string itemName, string password, Action<Response> callback) {

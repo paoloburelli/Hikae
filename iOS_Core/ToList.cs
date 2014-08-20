@@ -8,22 +8,66 @@ namespace tofy
 {
 	public class ToList
 	{
+		public static Action OnChange;
 		public string Name;
 		public string Password;
-		public List<ToItem> Items {
-			get { return _items; 
-			}
-			set {
-				Changes = Math.Abs (_items.Count - value.Count);
-				_items = value;
+		public ToItem this[int index] {
+			get { 
+				return Items[index]; 
 			}
 		}
 
-		private List<ToItem> _items = new List<ToItem>();
+		public ToItem this[string name] {
+			get { 
+				try{
+					return Items.First (p => p.Name == name);
+				}catch (InvalidOperationException){
+					return null;
+				}
+			}
+		}
+
+		public void AddItem(ToItem i) {
+			Items.Add (i);
+			Changes++;
+			if (OnChange != null)
+				OnChange ();
+		}
+
+		public int Count {
+			get {
+				return Items.Count;
+			}
+		}
+
+		public void RemoveAt(int index) {
+			Items.RemoveAt (index);
+			Changes++;
+			if (OnChange != null)
+				OnChange ();
+		}
+
+		public void Insert(int index,ToItem i) {
+			Items.Insert (index,i);
+			Changes++;
+			if (OnChange != null)
+				OnChange ();
+		}
+
+		public int IndexOf(ToItem it) {
+			return Items.IndexOf (it);
+		}
+
+		private List<ToItem> Items = new List<ToItem>();
 		public int Changes=0;
 
-
-
+		public void Synch(ToList source) {
+			Changes = Math.Abs (source.Count - this.Count);
+			Items = source.Items;
+			Password = source.Password;
+			if (OnChange != null)
+				OnChange ();
+		}
 
 		public static ToList Parse(
 			JsonValue value) {
@@ -87,15 +131,49 @@ namespace tofy
 			get; 
 			set; 
 		}
-		public bool Checked;
-		public string Name;
-		public string LastAuthor;
+		private bool _checked;
+		public bool Checked {
+			get{
+				return _checked;
+			}
+			set {
+				Synchronized = false;
+				_checked = value;
+				if (ToList.OnChange != null)
+					ToList.OnChange ();
+			}
+		}
+
+		public string Name{
+			get {
+				return _name;
+			}
+			set {
+				Synchronized = false;
+				_name = value;
+				if (ToList.OnChange != null)
+					ToList.OnChange ();			
+			}
+		}
+		private string _name;
+
+		private string _lastAuthor;
+		public string LastAuthor{
+			get {
+				return _lastAuthor;
+			}
+			set {
+				_lastAuthor = value;
+				if (ToList.OnChange != null)
+					ToList.OnChange ();			
+			}
+		}
 
 		public ToItem (string name, bool isChecked=false, string author="Someone", bool synchronized=false){
-			this.Name = name;
+			this._name = name;
 			this.Synchronized = synchronized;
-			this.Checked = isChecked;
-			this.LastAuthor = author;
+			this._checked = isChecked;
+			this._lastAuthor = author;
 		}
 
 		public override string ToString ()
@@ -106,7 +184,7 @@ namespace tofy
 		public JsonValue ToJson(){
 			JsonObject j = new JsonObject ();
 			j ["name"] = Name;
-			j ["checked"] = Checked;
+			j ["checked"] = _checked;
 			return j;
 		}
 

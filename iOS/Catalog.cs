@@ -22,7 +22,7 @@ namespace Hikae
 			} catch (IOException) {
 			}
 		
-			Lists.Add(new ToList("cestil",new List<ToItem>()));
+			//Lists.Add(new ToList("cestil",new List<ToItem>()));
 		}
 
 		public void Save(){
@@ -34,7 +34,7 @@ namespace Hikae
 
 			try {
 				using (TextWriter writer = new StreamWriter(FilePath)) {
-					jo.Save (writer);
+					writer.WriteLine(jo.ToString());
 					writer.Close();
 				}
 			} catch (IOException) {
@@ -54,6 +54,9 @@ namespace Hikae
 		public Catalog ()
 		{
 			Load ();
+			ToList.OnChange = delegate() {
+				Catalog.Instance.Save ();
+			};
 		}
 
 		public readonly List<ToList> Lists = new List<ToList>();

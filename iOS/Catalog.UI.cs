@@ -28,6 +28,7 @@ namespace Hikae
 			if (editingStyle == UITableViewCellEditingStyle.Delete) {
 				Catalog.Instance.Lists.RemoveAt (indexPath.Row);
 				tableView.DeleteRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Fade);
+				Save ();
 			} 
 		}
 

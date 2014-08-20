@@ -39,7 +39,7 @@ namespace Hikae
 					InvokeOnMainThread ( () => {
 						switch(response.Status) {
 						case HttpStatusCode.OK:
-							tableSource.List.Items = response.List.Items;
+							tableSource.List.Synch(response.List);
 							table.ReloadData();
 							loadingOverlay.Hide ();
 							break;
@@ -100,7 +100,6 @@ namespace Hikae
 		{
 			UIAlertView alert = new UIAlertView ();
 			alert.AddButton ("Delete List");
-			alert.AddButton ("Empty List");
 			alert.AddButton ("Cancel");
 			alert.Clicked += (object parent_sender, UIButtonEventArgs e) => {
 				if (e.ButtonIndex == 0) {
@@ -108,32 +107,14 @@ namespace Hikae
 					Communication.DeleteList(tableSource.List.Name,tableSource.List.Password,delegate(Communication.Response response) {
 						InvokeOnMainThread(() => {
 							loadingOverlay.Hide();
-							if (response.Status == HttpStatusCode.OK) {
-								//MasterViewController.RemoveList(tableSource.list);
+							if (response.Status == HttpStatusCode.NoContent) {
+								((MainViewController)NavigationController.ParentViewController).RemoveList(tableSource.List);
 								NavigationController.PopViewControllerAnimated(true);
-							}
+							} else
+								ShowAlert("List could not be deleted, error: "+response.Status);
 						});
 					});
-				} else if (e.ButtonIndex == 1) {
-					View.Add (loadingOverlay);
-					Communication.DeleteAllItems (tableSource.List.Name, tableSource.List.Password, delegate(Communication.Response response) {
-						InvokeOnMainThread(() => {
-							if (response.Status == HttpStatusCode.OK) {
-								tableSource.List.Items.Clear();
-								table.ReloadData ();
-								//MasterViewController.SaveChanges ();
-							} else {
-								alert = new UIAlertView ();
-								table.ReloadData();
-								alert.AddButton("Ok");
-								alert.Message = "Connection error, the list can't be cleared";
-								alert.AlertViewStyle = UIAlertViewStyle.Default;
-								alert.Show (); 
-							}
-							loadingOverlay.Hide();
-						});
-					});
-				}
+				} 
 			}; 
 			alert.Show ();
 		}
@@ -153,29 +134,15 @@ namespace Hikae
 					if (alert.GetTextField (0).Text == alert.GetTextField (1).Text){
 						Communication.ChangePassword(tableSource.List.Name,tableSource.List.Password,alert.GetTextField(0).Text,delegate(Communication.Response response) {
 							InvokeOnMainThread(() => {
-								if (response.Status == HttpStatusCode.OK){
+								if (response.Status == HttpStatusCode.Created){
 									tableSource.List.Password = alert.GetTextField (0).Text;
-
-									UIAlertView okAlert = new UIAlertView ();
-									okAlert.AddButton ("OK");
-									okAlert.Message = "Password changed successfuly";
-									okAlert.Show();
-
-									//MasterViewController.SaveChanges();
+									ShowAlert("Password changed successfuly");
 								} else {
-									UIAlertView noAlert = new UIAlertView ();
-									noAlert.AddButton ("OK");
-									noAlert.Message = "Password not set, error: "+response.Status;
-									noAlert.Show();
+									ShowAlert("Password not set, error: "+response.Status);
 								}
 							});
 						});
-					} else {
-						UIAlertView erAlert = new UIAlertView ();
-						erAlert.AddButton ("OK");
-						erAlert.Message = "The passwords do not match";
-						erAlert.Show();
-					}
+					} else ShowAlert("The passwords do not match");
 				}
 			}; 
 			alert.Show ();
@@ -185,9 +152,8 @@ namespace Hikae
 			Communication.GetList(tableSource.List.Name,tableSource.List.Password,delegate(Communication.Response response) {
 				InvokeOnMainThread(() => {
 					if (response.Status == HttpStatusCode.OK){
-						tableSource.List.Items = response.List.Items;
+						tableSource.List.Synch(response.List);
 						table.ReloadData();
-						//MasterViewController.SaveChanges();
 					}
 					if (refreshControl != null)
 						refreshControl.EndRefreshing();
@@ -221,10 +187,7 @@ namespace Hikae
 				addButton,
 				emptySpace
 			},true);
-
-			//			NavigationItem.RightBarButtonItem = refreshButton;
-
-
+				
 			UIRefreshControl RefreshControl = new UIRefreshControl();
 			RefreshControl.AddTarget (delegate(object sender, EventArgs e) {
 				refresh(RefreshControl);
@@ -242,11 +205,11 @@ namespace Hikae
 			alert.AddButton ("Cancel");
 			alert.Message = "Enter item's name";
 			alert.AlertViewStyle = UIAlertViewStyle.PlainTextInput;
-			alert.Clicked += AlertButtonClicked; 
+			alert.Clicked += AddConfirmed; 
 			alert.Show ();
 		}
 
-		void AlertButtonClicked(object sender, UIButtonEventArgs args) {
+		void AddConfirmed(object sender, UIButtonEventArgs args) {
 			UIAlertView parent_alert = (UIAlertView)sender;
 
 			if (args.ButtonIndex == 0) {
@@ -254,22 +217,24 @@ namespace Hikae
 					if (!tableSource.contains (parent_alert.GetTextField (0).Text)) {
 						tableSource.addItem (parent_alert.GetTextField (0).Text, table);
 						Communication.AddItem (tableSource.List.Name, parent_alert.GetTextField (0).Text, tableSource.List.Password, delegate(Communication.Response response) {
-							if (response.Status == HttpStatusCode.OK) {
+							if (response.Status == HttpStatusCode.Created) {
 								InvokeOnMainThread (() => {
 									tableSource.updateItem (parent_alert.GetTextField (0).Text, true, table);
-									//MasterViewController.SaveChanges ();
 								});
 							}
 						});
 					}
-				} else {
-					UIAlertView erAlert = new UIAlertView ();
-					erAlert.AddButton ("OK");
-					erAlert.Message = "The item's name can't be empty";
-					erAlert.Clicked += AddNewItem;
-					erAlert.Show();
-				}
+				} else ShowAlert ("The item's name can't be empty", AddNewItem);
 			}
+		}
+
+		public void ShowAlert(string text,EventHandler<UIButtonEventArgs> action=null){
+			UIAlertView erAlert = new UIAlertView ();
+			erAlert.AddButton ("OK");
+			erAlert.Message = text;
+			if (action != null)
+				erAlert.Clicked += action;
+			erAlert.Show();
 		}
 	}
 }
