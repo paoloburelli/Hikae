@@ -109,11 +109,7 @@
     <Reference Include="System.Json" />
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="Resources\checkbox.png" />
     <BundleResource Include="Resources\paper.jpg" />
-    <BundleResource Include="Resources\checkbox-ticked.png" />
-    <BundleResource Include="Resources\logo-toolbar.png" />
-    <BundleResource Include="Resources\lock.png" />
     <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon.png" />
     <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon%402x.png" />
     <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-40.png" />
@@ -127,6 +123,11 @@
     <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small%402x.png" />
     <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small-50.png" />
     <BundleResource Include="Resources\Images.xcassets\AppIcons.appiconset\Icon-Small-50%402x.png" />
+    <BundleResource Include="Resources\lock%402x.png" />
+    <BundleResource Include="Resources\logo-toolbar%402x.png" />
+    <BundleResource Include="Resources\checkbox%402x.png" />
+    <BundleResource Include="Resources\checkbox-ticked%402x.png" />
+    <BundleResource Include="Resources\observer%402x.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />

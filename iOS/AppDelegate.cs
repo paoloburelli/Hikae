@@ -39,6 +39,8 @@ namespace Hikae
 		// This method is called as part of the transiton from background to active state.
 		public override void WillEnterForeground (UIApplication application)
 		{
+			Catalog.Instance.Refresh ();
+			application.ApplicationIconBadgeNumber = 0;
 		}
 
 		// This method is called when the application is about to terminate. Save data, if needed.
@@ -50,6 +52,8 @@ namespace Hikae
 		{
 			UIRemoteNotificationType notificationTypes = UIRemoteNotificationType.Alert | UIRemoteNotificationType.Badge | UIRemoteNotificationType.Sound;
 			UIApplication.SharedApplication.RegisterForRemoteNotificationTypes(notificationTypes);
+			Catalog.Instance.Refresh ();
+			application.ApplicationIconBadgeNumber = 0;
 		}
 
 		public override void RegisteredForRemoteNotifications (
@@ -60,9 +64,19 @@ namespace Hikae
 
 		public override void DidReceiveRemoteNotification (UIApplication application, NSDictionary userInfo, Action<UIBackgroundFetchResult> completionHandler)
 		{
+			if (application.ApplicationState == UIApplicationState.Active) {
 
-			//((MasterViewController)((UINavigationController)Window.RootViewController).ViewControllers[0]).RefreshLists ();
-			application.ApplicationIconBadgeNumber = 0;
+				string eventType = userInfo ["type"].ToString ();
+				string listName = userInfo ["list_name"].ToString ();
+				string itemName = "";
+				if (userInfo.ContainsKey (new NSString ("item_name")))
+					itemName = userInfo ["item_name"].ToString ();
+				string author = "";
+				if (userInfo.ContainsKey (new NSString ("author")))
+					author = userInfo ["author"].ToString ();
+
+				Catalog.Instance.HandleNotification (eventType, listName, itemName, author);
+			}
 		}
 	}
 }

@@ -7,12 +7,13 @@
         <!--Navigation Controller-->
         <scene sceneID="cUi-kZ-frf">
             <objects>
-                <navigationController id="rS3-R9-Ivy" sceneMemberID="viewController">
+                <navigationController id="rS3-R9-Ivy" sceneMemberID="viewController" toolbarHidden="YES" wantsFullScreenLayout="NO">
                     <navigationBar key="navigationBar" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" barStyle="black" backIndicatorImage="brown-leather-texture.jpg" id="yXu-0R-QUA">
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="tintColor" red="0.92549019607843142" green="0.90588235294117647" blue="0.8666666666666667" alpha="1" colorSpace="calibratedRGB"/>
                         <textAttributes key="titleTextAttributes">
-                            <color key="textColor" red="0.92549019607843142" green="0.90588235294117647" blue="0.8666666666666667" alpha="1" colorSpace="calibratedRGB"/>
+                            <color key="textColor" colorSpace="calibratedRGB" red="0.92549019607843142" green="0.90588235294117647" blue="0.8666666666666667" alpha="1"/>
+                            <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                         </textAttributes>
                     </navigationBar>
                     <connections>
@@ -45,7 +46,7 @@
                                 <items/>
                                 <color key="tintColor" red="0.92549019607843142" green="0.90588235294117647" blue="0.8666666666666667" alpha="1" colorSpace="calibratedRGB"/>
                             </toolbar>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="198">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="64" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="198">
                                 <rect key="frame" x="0.0" y="64" width="320" height="459"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -61,13 +62,13 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="223">
-                                                    <rect key="frame" x="52" y="0.0" width="253" height="43"/>
-                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                                    <rect key="frame" x="73" y="0.0" width="232" height="43"/>
+                                                    <fontDescription key="fontDescription" name="Chalkduster" family="Chalkduster" pointSize="28"/>
                                                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                                     <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                                 </label>
-                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" image="checkbox.png" id="235">
-                                                    <rect key="frame" x="15" y="10" width="22" height="22"/>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="checkbox.png" id="235">
+                                                    <rect key="frame" x="15" y="0.0" width="43" height="43"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </imageView>
                                             </subviews>
@@ -97,7 +98,7 @@
         </scene>
         <scene sceneID="275">
             <objects>
-                <viewController id="276" sceneMemberID="viewController" customClass="MainViewController">
+                <viewController id="276" sceneMemberID="viewController" customClass="MainViewController" title="WeJot">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="273"/>
                         <viewControllerLayoutGuide type="bottom" id="274"/>
@@ -107,21 +108,21 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <subviews>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" id="289" translatesAutoresizingMaskIntoConstraints="NO" misplaced="YES">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" rowHeight="64" sectionHeaderHeight="22" sectionFooterHeight="22" id="289" translatesAutoresizingMaskIntoConstraints="NO" misplaced="YES">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="525"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
-                                    <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="290" textLabel="360" style="IBUITableViewCellStyleDefault" reuseIdentifier="Cell" opaque="NO">
+                                    <tableViewCell contentMode="scaleToFill" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" id="290" style="IBUITableViewCellStyleDefault" reuseIdentifier="Cell" opaque="NO" textLabel="444" imageView="470" accessoryType="disclosureIndicator">
                                         <rect key="frame" x="0.0" y="86" width="320" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" id="291" tableViewCell="290">
-                                            <rect key="frame" x="0.0" y="0.0" width="320" height="43"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="287" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                             <subviews>
-                                                <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="360">
-                                                    <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                                <label opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="left" text="Title" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="444">
+                                                    <fontDescription key="fontDescription" name="Chalkduster" family="Chalkduster" pointSize="28"/>
                                                     <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                                     <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
                                                 </label>
@@ -155,7 +156,7 @@
                             <constraint firstItem="274" firstAttribute="top" secondItem="289" secondAttribute="bottom" constant="22" id="352"/>
                         </constraints>
                     </view>
-                    <navigationItem title="Title" id="280" key="navigationItem"/>
+                    <navigationItem title="" id="280" key="navigationItem"/>
                     <connections>
                         <outlet property="toolbar" destination="304" id="name-outlet-304"/>
                         <outlet property="table" destination="289" id="name-outlet-289"/>
@@ -168,11 +169,13 @@
     </scenes>
     <resources>
         <image name="brown-leather-texture.jpg" width="3888" height="2592"/>
-        <image name="checkbox.png" width="22" height="22"/>
+        <image name="checkbox.png" width="64" height="64"/>
         <image name="paper.jpg" width="500" height="500"/>
-        <image name="checkbox-ticked.png" width="22" height="22"/>
-        <image name="logo-toolbar.png" width="100" height="28"/>
-        <image name="lock.png" width="22" height="22"/>
+        <image name="checkbox-ticked.png" width="64" height="64"/>
+        <image name="logo-toolbar.png" width="170" height="54"/>
+        <image name="lock.png" width="44" height="44"/>
+        <image name="lock-44.png" width="44" height="44"/>
+        <image name="checkbox@x2.png" width="64" height="64"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>

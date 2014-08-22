@@ -2,6 +2,7 @@
 using MonoTouch.Foundation;
 using MonoTouch.UIKit;
 using tofy;
+using System.Net;
 
 namespace Hikae
 {
@@ -17,8 +18,10 @@ namespace Hikae
 		public override UITableViewCell GetCell (UITableView tableView, NSIndexPath indexPath)
 		{
 			var cell = (UITableViewCell)tableView.DequeueReusableCell (CellIdentifier, indexPath);
+			cell.SelectionStyle = UITableViewCellSelectionStyle.None;
 
-			cell.TextLabel.Text = Catalog.Instance.Lists [indexPath.Row].ToString ();
+			cell.TextLabel.Text = Catalog.Instance.Lists [indexPath.Row].ToString () + 
+				(Catalog.Instance.Lists [indexPath.Row].Changes>0 ? " ("+Catalog.Instance.Lists [indexPath.Row].Changes+")" : "");
 
 			return cell;
 		}
@@ -26,6 +29,7 @@ namespace Hikae
 		public override void CommitEditingStyle (UITableView tableView, UITableViewCellEditingStyle editingStyle, NSIndexPath indexPath)
 		{
 			if (editingStyle == UITableViewCellEditingStyle.Delete) {
+				Communication.UnRegisterForNotifications(Catalog.Instance.Lists[indexPath.Row].Name,Catalog.Instance.Lists[indexPath.Row].Password);
 				Catalog.Instance.Lists.RemoveAt (indexPath.Row);
 				tableView.DeleteRows (new NSIndexPath[] { indexPath }, UITableViewRowAnimation.Fade);
 				Save ();

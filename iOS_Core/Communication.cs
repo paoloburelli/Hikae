@@ -62,7 +62,7 @@ namespace tofy
 			Response response;
 			HttpWebRequest request = (HttpWebRequest)WebRequest.Create(CLIENT_URL+resource);
 			if (password != null && password != "")
-				request.Headers ["Authorization"] = Utils.Base64Encode(":"+password);
+				request.Headers ["Authorization"] = "Basic "+Utils.Base64Encode(":"+password);
 
 			request.Headers ["Device-Id"] = Device.Token;
 
@@ -113,6 +113,10 @@ namespace tofy
 		public static void GetList(string listName, string password, Action<Response> callback) {
 			makeRequest ("lists/" + listName, password, Method.GET, false, callback);
 		}
+
+		public static void GetItem(string listName, string itemName, string password, Action<Response> callback) {
+			makeRequest ("lists/" + listName + "/items/"+itemName, password, Method.GET, false, callback);
+		}
 			
 		public static void DeleteList(string listName, string password, Action<Response> callback) {
 			makeRequest ("lists/" + listName, password, Method.DELETE, false, callback);
@@ -142,6 +146,14 @@ namespace tofy
 			JsonObject jo = new JsonObject ();
 			jo ["checked"] = check;
 			makeRequest ("lists/" + listName+"/items/"+itemName, password, Method.PATCH , true, callback,jo.ToString());
+		}
+
+		public static void RegisterForNotifications(string listName, string password) {
+			makeRequest ("lists/" + listName+"/apns/devices/"+Device.Token, password, Method.PUT , true, (Response response) => {});
+		}
+
+		public static void UnRegisterForNotifications(string listName, string password) {
+			makeRequest ("lists/" + listName+"/apns/devices/"+Device.Token, password, Method.DELETE , true, (Response response) => {});
 		}
 	}
 }

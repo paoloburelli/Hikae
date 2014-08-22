@@ -8,9 +8,24 @@ namespace tofy
 {
 	public class ToList
 	{
-		public static Action OnChange;
+		public static string PASSWORD_CHANGED_FLAG="---<not valid anymore>---";
+		public static Action<ToList,int> UpdateUI;
+		public static Action Save;
 		public string Name;
-		public string Password;
+		public string Password{
+			get {
+				return _password;
+			}
+			set {
+				_password = value;
+				if (ToList.Save != null)
+					ToList.Save();	
+				if (UpdateUI != null)
+					UpdateUI (this,-1);
+			}
+		}
+		private string _password;
+
 		public ToItem this[int index] {
 			get { 
 				return Items[index]; 
@@ -28,10 +43,13 @@ namespace tofy
 		}
 
 		public void AddItem(ToItem i) {
+			i.Owner = this;
 			Items.Add (i);
-			Changes++;
-			if (OnChange != null)
-				OnChange ();
+			_changes++;
+			if (UpdateUI != null)
+				UpdateUI (this,this.Count-1);
+			if (Save != null)
+				Save ();
 		}
 
 		public int Count {
@@ -42,56 +60,104 @@ namespace tofy
 
 		public void RemoveAt(int index) {
 			Items.RemoveAt (index);
-			Changes++;
-			if (OnChange != null)
-				OnChange ();
+			_changes++;
+			if (UpdateUI != null)
+				UpdateUI (this,index);
+			if (Save != null)
+				Save ();
 		}
 
 		public void Insert(int index,ToItem i) {
+			i.Owner = this;
 			Items.Insert (index,i);
-			Changes++;
-			if (OnChange != null)
-				OnChange ();
+			_changes++;
+			if (UpdateUI != null)
+				UpdateUI (this,index);
+			if (Save != null)
+				Save ();
 		}
 
 		public int IndexOf(ToItem it) {
 			return Items.IndexOf (it);
 		}
 
-		private List<ToItem> Items = new List<ToItem>();
-		public int Changes=0;
+		private List<ToItem> Items;
+		public List<string> Observers;
+
+		private int _changes=0;
+		public int Changes{
+			get { 
+				return _changes;
+			}
+		}
+		public void ResetChanges() {
+			_changes = 0;
+			if (UpdateUI != null)
+				UpdateUI (this,-1);
+			if (Save != null)
+				Save ();
+		}
 
 		public void Synch(ToList source) {
-			Changes = Math.Abs (source.Count - this.Count);
+			_changes += Math.Abs (source.Count - this.Count);
 			Items = source.Items;
-			Password = source.Password;
-			if (OnChange != null)
-				OnChange ();
+			Observers = source.Observers;
+			if (source.Password != null)
+				_password = source.Password;
+			if (UpdateUI != null)
+				UpdateUI (this,-1);
+			if (Save != null)
+				Save ();
 		}
 
 		public static ToList Parse(
 			JsonValue value) {
-			JsonArray a = (JsonArray)value ["items"];
-
 
 			string password=null;
-			try {
+			if (value.ContainsKey("password"))
 				password = value ["password"];
-			} catch (Exception){
+
+			List<ToItem> tl = null;
+			if (value.ContainsKey ("items")) {
+				JsonArray a = (JsonArray)value ["items"];
+				tl = new List<ToItem> ();
+				foreach (JsonValue v in a) {
+					tl.Insert (0, ToItem.Parse (v));
+				}
 			}
 
-			List<ToItem> l = new List<ToItem> ();
-			foreach (JsonValue v in a) {
-				l.Insert (0, ToItem.Parse(v));
+			List<string> obs = null;
+			if (value.ContainsKey("observers")) {
+				JsonArray a = (JsonArray)value ["observers"];
+				obs = new List<string> ();
+				foreach (JsonValue v in a) {
+					obs.Insert (0, v.ToString());
+				}
 			}
 
-			return new ToList (value["name"].ToString().Trim('"'), l, password);
+			ToList rValue = new ToList (value ["name"].ToString ().Trim ('"'), password, tl, obs);
+
+			if (value.ContainsKey("changes"))
+				rValue._changes = value ["changes"];
+
+			return rValue;
 		}
 
-		public ToList (string name, List<ToItem> items, string password = null){
-			this.Password = password;
+		public ToList (string name, string password = null, List<ToItem> items=null, List<string> observers=null){
+			this._password = password;
 			this.Name = name;
-			this.Items = items;
+
+			if (items == null)
+				this.Items = new List<ToItem> ();
+			else
+				this.Items = items;
+			if (observers == null)
+				this.Observers = new List<string> ();
+			else
+				this.Observers = observers;
+
+			foreach (ToItem it in Items)
+				it.Owner = this;
 		}
 
 		public override string ToString ()
@@ -104,12 +170,19 @@ namespace tofy
 			JsonObject jo = new JsonObject ();
 			jo.Add ("name", new JsonPrimitive (Name));
 			jo.Add ("password", new JsonPrimitive (Password));
+			jo.Add ("changes", new JsonPrimitive (Changes));
 
 			List<JsonValue> jitms = new List<JsonValue>();
 			foreach(ToItem i in Items)
 				jitms.Insert(0,i.ToJson());
 
 			jo.Add ("items", new JsonArray(jitms));
+
+			List<JsonValue> jobs = new List<JsonValue>();
+			foreach(string o in Observers)
+				jobs.Insert(0,new JsonPrimitive(o));
+
+			jo.Add ("observers", new JsonArray(jobs));
 			return jo;
 		}
 
@@ -126,84 +199,5 @@ namespace tofy
 		}
 	}
 
-	public class ToItem {
-		public bool Synchronized { 
-			get; 
-			set; 
-		}
-		private bool _checked;
-		public bool Checked {
-			get{
-				return _checked;
-			}
-			set {
-				Synchronized = false;
-				_checked = value;
-				if (ToList.OnChange != null)
-					ToList.OnChange ();
-			}
-		}
-
-		public string Name{
-			get {
-				return _name;
-			}
-			set {
-				Synchronized = false;
-				_name = value;
-				if (ToList.OnChange != null)
-					ToList.OnChange ();			
-			}
-		}
-		private string _name;
-
-		private string _lastAuthor;
-		public string LastAuthor{
-			get {
-				return _lastAuthor;
-			}
-			set {
-				_lastAuthor = value;
-				if (ToList.OnChange != null)
-					ToList.OnChange ();			
-			}
-		}
-
-		public ToItem (string name, bool isChecked=false, string author="Someone", bool synchronized=false){
-			this._name = name;
-			this.Synchronized = synchronized;
-			this._checked = isChecked;
-			this._lastAuthor = author;
-		}
-
-		public override string ToString ()
-		{
-			return Name;
-		}
-
-		public JsonValue ToJson(){
-			JsonObject j = new JsonObject ();
-			j ["name"] = Name;
-			j ["checked"] = _checked;
-			return j;
-		}
-
-		public static ToItem Parse(JsonValue jo) {
-			string name = "";
-			if (jo.ContainsKey ("name"))
-				name = jo ["name"].ToString ().Trim ('"');
-
-			bool isChecked = false;
-			if (jo.ContainsKey("checked"))
-				isChecked = (bool)jo ["checked"];
-
-			string lastAuthor = "Someone";
-			if (jo.ContainsKey("last_author"))
-				lastAuthor = jo ["last_author"].ToString ().Trim ('"');
-
-
-			return new ToItem (name, isChecked, lastAuthor, true);
-		}
-	}
 }
 
